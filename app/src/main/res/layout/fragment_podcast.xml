@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data></data>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_gradient"
+        android:gravity="center"
+        android:orientation="vertical"
+        tools:context=".PlayerActivity">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/backBtnPA"
+                        android:layout_width="@dimen/padding_50dp"
+                        android:layout_height="@dimen/padding_50dp"
+                        android:layout_marginStart="5dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_baseline_arrow_back_ios_242" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/world_of_music"
+                        android:textColor="@color/summary_orange"
+                        android:textSize="@dimen/padding_20sp"
+                        android:textStyle="bold"
+                        tools:ignore="NestedWeights" />
+
+                    <ImageButton
+                        android:id="@+id/favouriteBtnPA"
+                        android:layout_width="@dimen/padding_50dp"
+                        android:layout_height="@dimen/padding_50dp"
+                        android:layout_marginEnd="@dimen/padding_20dp"
+                        android:background="?attr/selectableItemBackground" />
+                </LinearLayout>
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/imgSong"
+                    android:layout_width="@dimen/dimen_250sp"
+                    android:layout_height="@dimen/dimen_250sp"
+                    android:layout_margin="10dp"
+                    android:padding="@dimen/padding_5dp"
+                    android:src="@drawable/music"
+                    app:shapeAppearanceOverlay="@style/curved"
+                    app:strokeColor="@color/summary_orange"
+                    app:strokeWidth="@dimen/padding_2dp" />
+
+                <TextView
+                    android:id="@+id/songNamePA"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/padding_20dp"
+                    android:layout_weight="1"
+                    android:ellipsize="marquee"
+                    android:gravity="center"
+                    android:singleLine="true"
+                    android:text="Podcast name"
+                    android:textColor="?colorOnPrimary"
+                    android:textIsSelectable="true"
+                    android:textSize="@dimen/padding_18sp" />
+
+                <!--    Floating Buttons for Previous, Pause & Next-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/padding_10dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                        android:id="@+id/previousBtnPA"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:icon="@drawable/ic_baseline_keyboard_double_arrow_left_24"
+                        app:iconSize="@dimen/padding_40dp"
+                        app:iconTint="@color/white" />
+
+                    <!--        Play & Pause Button-->
+                    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                        android:id="@+id/playPauseBtnPA"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="@dimen/padding_25dp"
+                        android:backgroundTint="@color/summary_orange"
+                        app:icon="@drawable/ic_baseline_pause_circle_outline_24"
+                        app:iconSize="@dimen/padding_50dp"
+                        app:iconTint="@color/white" />
+
+                    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                        android:id="@+id/nextBtnPA"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:icon="@drawable/ic_baseline_keyboard_double_arrow_right_24"
+                        app:iconSize="@dimen/padding_40dp"
+                        app:iconTint="@color/white" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/padding_25dp"
+                    android:layout_margin="@dimen/padding_20dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvSeekBarStart"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="start"
+                        android:textColor="@color/summary_orange"
+                        android:textSize="@dimen/padding_15sp" />
+
+                    <SeekBar
+                        android:id="@+id/seekBarPA"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"/>
+
+                    <TextView
+                        android:id="@+id/tvSeekBarEnd"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="end"
+                        android:textColor="@color/summary_orange"
+                        android:textSize="@dimen/padding_15sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="@dimen/padding_40dp"
+                android:layout_height="@dimen/padding_40dp"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/lightGray"
+                android:progressTint="@color/lightGray"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:visibility="visible"/>
+        </FrameLayout>
+    </LinearLayout>
+</layout>
