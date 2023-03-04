@@ -25,7 +25,7 @@
             app:destination="@id/homeFragment" />
         <argument
             android:name="songList"
-            app:argType="com.example.podcastapp.data.Song" />
+            app:argType="com.example.podcastapp.data.test.Item" />
     </fragment>
     <fragment
         android:id="@+id/songFragment"

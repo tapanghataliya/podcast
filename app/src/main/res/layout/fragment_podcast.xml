@@ -84,6 +84,19 @@
                     android:textIsSelectable="true"
                     android:textSize="@dimen/padding_18sp" />
 
+                <TextView
+                    android:id="@+id/songType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/padding_20dp"
+                    android:ellipsize="marquee"
+                    android:gravity="center"
+                    android:singleLine="true"
+                    android:text="Podcast name"
+                    android:textColor="?colorOnPrimary"
+                    android:textIsSelectable="true"
+                    android:textSize="@dimen/padding_14sp" />
+
                 <!--    Floating Buttons for Previous, Pause & Next-->
                 <LinearLayout
                     android:layout_width="match_parent"

@@ -5,15 +5,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.podcastapp.R
-import com.example.podcastapp.data.Song
+import com.example.podcastapp.data.test.Item
 import com.example.podcastapp.databinding.ItemPodcastBinding
 
 class SongAdapter : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
 
-    private var songs = mutableListOf<Song>()
-    private var clickInterface: ClickInterface<Song>? = null
+    private var songs = mutableListOf<Item>()
+    private var clickInterface: ClickInterface<Item>? = null
 
-    fun updateSongs(songs: List<Song>) {
+    fun updateSongs(songs: List<Item>) {
         this.songs = songs.toMutableList()
         notifyItemRangeInserted(0, songs.size)
     }
@@ -39,7 +39,7 @@ class SongAdapter : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
         }
     }
 
-    fun setItemClick(clickInterface: ClickInterface<Song>) {
+    fun setItemClick(clickInterface: ClickInterface<Item>) {
         this.clickInterface = clickInterface
     }
 

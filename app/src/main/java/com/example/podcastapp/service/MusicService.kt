@@ -4,13 +4,13 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.graphics.BitmapFactory
-import android.media.AudioManager
 import android.media.MediaPlayer
-import android.os.*
+import android.os.Binder
+import android.os.Build
+import android.os.IBinder
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.system.Os.link
 import android.util.Log
 import com.example.podcastapp.R
 import com.example.podcastapp.screens.MainActivity
@@ -27,8 +27,6 @@ class MusicService : Service() {
     var mediaPlayer: MediaPlayer? = null
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var runnable: Runnable
-    lateinit var audioManager: AudioManager
-
 
     override fun onBind(intent: Intent?): IBinder? {
         mediaSession = MediaSessionCompat(baseContext, "My Music")
@@ -77,6 +75,7 @@ class MusicService : Service() {
                 .setContentTitle("Main Title")
                 .setContentText("Song by artist")
                 .setSmallIcon(R.drawable.music)
+                .setLargeIcon(image)
                 .setStyle(
                     androidx.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(mediaSession.sessionToken)
@@ -142,7 +141,7 @@ class MusicService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if(intent != null){
+        if (intent != null) {
             val title = intent.getStringExtra("data")
             Log.d("OBJECT_LIST", title.toString())
         }

@@ -14,7 +14,10 @@ import com.example.podcastapp.adapter.SongAdapter
 import com.example.podcastapp.base.BaseFragment
 import com.example.podcastapp.data.NetworkResult
 import com.example.podcastapp.data.Song
+import com.example.podcastapp.data.test.Item
+import com.example.podcastapp.data.test.SongList
 import com.example.podcastapp.databinding.FragmentHomeBinding
+import com.example.podcastapp.utils.Status
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -37,26 +40,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         getBindingClass().rvPodcast.layoutManager = GridLayoutManager(context, 2)
         getBindingClass().rvPodcast.adapter = songAdapter
 
-        viewModel.songResponse.observe(viewLifecycleOwner) {
-            when (it) {
-                is NetworkResult.Loading -> {
-                    getBindingClass().progressBar.isVisible = it.isLoading
-                }
+        viewModel.users.observe(viewLifecycleOwner) {song->
 
-                is NetworkResult.Failure -> {
-                    Toast.makeText(context, it.errorMessage, Toast.LENGTH_SHORT).show()
-                    getBindingClass().progressBar.isVisible = false
-                }
-
-                is NetworkResult.Success -> {
-                    songAdapter.updateSongs(it.data)
-                    getBindingClass().progressBar.isVisible = false
-                }
-            }
+            getBindingClass().progressBar.visibility = View.GONE
+            songAdapter.updateSongs(song.items)
         }
 
-        songAdapter.setItemClick(object : ClickInterface<Song> {
-            override fun onClick(song: Song) {
+        songAdapter.setItemClick(object : ClickInterface<Item> {
+            override fun onClick(song: Item) {
                 val action = HomeFragmentDirections.actionHomeFragmentToPodcastFragment(song)
                 findNavController().navigate(action)
             }

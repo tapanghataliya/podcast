@@ -1,17 +1,12 @@
 package com.example.podcastapp.screens.podcast_detail
 
-import android.annotation.SuppressLint
 import android.content.ComponentName
-import android.content.Intent
 import android.content.ServiceConnection
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.media.MediaPlayer.OnPreparedListener
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
-import android.text.Editable
-import android.util.Log
 import android.view.View
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
@@ -37,11 +32,11 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
     private val args: PodcastFragmentArgs by navArgs()
 
     companion object {
+
         lateinit var musicListPA: ArrayList<Song>
         var songPosition: Int = 0
         var isPlaying: Boolean = false
         var musicService: MusicService? = null
-
         lateinit var getBindingClass: FragmentPodcastBinding
     }
 
@@ -54,31 +49,26 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
         super.onCreate(savedInstanceState)
 
         viewModel = ViewModelProvider(this)[PodcastViewModel::class.java]
-//        val sendIntent = Intent(context, MusicService::class.java)
-//        sendIntent.putExtra("audioURL", args.songList.data.audio)
-//        context?.startService(sendIntent)
 
-        val intentService = Intent(context, MusicService::class.java)
-        activity?.bindService(intentService, this, AppCompatActivity.BIND_AUTO_CREATE)
-        context?.startService(intentService)
+//        val intentService = Intent(context, MusicService::class.java)
+//        activity?.bindService(intentService, this, AppCompatActivity.BIND_AUTO_CREATE)
+//        context?.startService(intentService)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         (activity as AppCompatActivity).supportActionBar!!.hide()
-        val arguments = arguments
-        if (arguments != null) {
-            getBindingClass().songNamePA.text =
-                Editable.Factory.getInstance().newEditable(args.songList.data.title)
-            getBindingClass().songNamePA.setSelected(true)
 
-            Glide.with(this)
-                .load(args.songList.data.image)
-                .apply(RequestOptions().placeholder(R.drawable.music).centerCrop())
-                .into(getBindingClass().imgSong)
-        }
-        Log.d("MUSIC_LIST", args.songList.data.image.toString())
-//        playMusic()
+        getBindingClass().songNamePA.text = args.songList.data.title
+        getBindingClass().songNamePA.setSelected(true)
+        getBindingClass().songType.text = args.songList.type
+
+        Glide.with(this)
+            .load(args.songList.data.image)
+            .apply(RequestOptions().placeholder(R.drawable.music).centerCrop())
+            .into(getBindingClass().imgSong)
+
+        playMusic()
         clickHandler()
         getBindingClass().seekBarPA.setOnSeekBarChangeListener(this@PodcastFragment)
     }
@@ -93,7 +83,7 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
         try {
             mediaPlayer.setDataSource(args.songList.data.audio)
             mediaPlayer.prepareAsync()
-            mediaPlayer.setOnPreparedListener(OnPreparedListener {
+            mediaPlayer.setOnPreparedListener(MediaPlayer.OnPreparedListener {
                 initializeSeekBar()
                 mediaPlayer.start()
                 getBindingClass().progressBar.visibility = View.GONE
@@ -193,7 +183,7 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
     }
 
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-        if(musicService == null){
+        if (musicService == null) {
             val binder = service as MusicService.MyBinder
             musicService = binder.currentService()
         }
