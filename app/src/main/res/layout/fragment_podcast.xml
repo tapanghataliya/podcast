@@ -186,12 +186,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-<!--            <include layout="@layout/progressbar"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_gravity="center"-->
-<!--                android:visibility="gone"/>-->
-
             <ProgressBar
                 android:id="@+id/progressBar"
                 android:layout_width="@dimen/padding_40dp"

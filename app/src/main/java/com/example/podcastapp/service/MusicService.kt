@@ -44,6 +44,7 @@ class MusicService: Service(), MediaPlayer.OnPreparedListener {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
         title = intent!!.getStringExtra("title").toString()
         publisher = intent.getStringExtra("publisher").toString()
         imageUrl = intent.getStringExtra("thumbnail").toString()
