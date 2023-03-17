@@ -24,16 +24,6 @@ class AppModule {
             .build()
     }
 
-
-    @Singleton
-    @Provides
-    @Named("loggingInterceptor")
-    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
-        return HttpLoggingInterceptor().apply {
-            this.level = HttpLoggingInterceptor.Level.BODY
-        }
-    }
-
     @Provides
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()

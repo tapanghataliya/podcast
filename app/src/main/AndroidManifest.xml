@@ -32,12 +32,10 @@
             android:enabled="true"
             android:exported="true"></service>
 
+
         <activity android:name=".screens.MainActivity"
             android:exported="true"/>
 
-        <receiver
-            android:name=".service.NotificationReceiver"
-            android:enabled="true" />
     </application>
 
 </manifest>

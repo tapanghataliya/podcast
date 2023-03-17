@@ -1,128 +1,106 @@
 package com.example.podcastapp.screens.podcast_detail
 
-import android.content.ComponentName
-import android.content.ServiceConnection
+import android.content.*
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.registerReceiver
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.navArgs
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.example.podcastapp.BR
 import com.example.podcastapp.R
 import com.example.podcastapp.base.BaseFragment
-import com.example.podcastapp.data.Song
 import com.example.podcastapp.databinding.FragmentPodcastBinding
 import com.example.podcastapp.service.MusicService
-import com.google.android.exoplayer2.util.Util
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.IOException
 
 
 @AndroidEntryPoint
 class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>(),
-    SeekBar.OnSeekBarChangeListener, ServiceConnection {
+    SeekBar.OnSeekBarChangeListener {
 
-    private val args: PodcastFragmentArgs by navArgs()
+    private var audio: String = ""
+    private lateinit var title: String
+    private lateinit var titleDetail: String
+    private lateinit var publisher: String
+    private var imageUrl: String = ""
+    private lateinit var myService: MusicService
 
     companion object {
-
-        lateinit var musicListPA: ArrayList<Song>
-        var songPosition: Int = 0
-        var isPlaying: Boolean = false
         var musicService: MusicService? = null
-        lateinit var getBindingClass: FragmentPodcastBinding
     }
 
-    private lateinit var mediaPlayer: MediaPlayer
+    private var isBound = false
 
     private lateinit var runnable: Runnable
     private var handler: Handler = Handler()
+    private lateinit var musicServiceIntent: Intent
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+
+            myService = (service as MusicService.MyBinder).currentService()
+            initializeSeekBar()
+            getBindingClass().progressBar.visibility = View.GONE
+            val musicBinder = service as MusicService.MyBinder
+            myService = musicBinder.currentService()
+            isBound = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            isBound = false
+        }
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         viewModel = ViewModelProvider(this)[PodcastViewModel::class.java]
-
-//        val intentService = Intent(context, MusicService::class.java)
-//        activity?.bindService(intentService, this, AppCompatActivity.BIND_AUTO_CREATE)
-//        context?.startService(intentService)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         (activity as AppCompatActivity).supportActionBar!!.hide()
 
-        getBindingClass().songNamePA.text = args.songList.data.title
-        getBindingClass().songNamePA.setSelected(true)
-        getBindingClass().songType.text = args.songList.type
+        val arguments = arguments
+        if (arguments != null) {
+            title = arguments.getString("title").toString()
+            titleDetail = arguments.getString("titleDetail").toString()
+            publisher = arguments.getString("publisher").toString()
+            imageUrl = arguments.getString("thumbnail").toString()
+            audio = arguments.getString("audio").toString()
 
-        Glide.with(this)
-            .load(args.songList.data.image)
-            .apply(RequestOptions().placeholder(R.drawable.music).centerCrop())
-            .into(getBindingClass().imgSong)
+            getBindingClass().songNamePA.text = title
+            getBindingClass().songDetail.text = titleDetail
+            getBindingClass().songDetail.setSelected(true)
+            getBindingClass().songType.text = publisher
 
-        playMusic()
+            Glide.with(this)
+                .load(imageUrl)
+                .apply(RequestOptions().placeholder(R.drawable.music).centerCrop())
+                .into(getBindingClass().imgSong)
+        }
+
+        musicServiceIntent = Intent(context, MusicService::class.java)
+        activity?.bindService(musicServiceIntent, connection, AppCompatActivity.BIND_AUTO_CREATE)
+        musicServiceIntent.putExtra("audioURL", audio)
+        musicServiceIntent.putExtra("title", title)
+        musicServiceIntent.putExtra("publisher", publisher)
+        musicServiceIntent.putExtra("thumbnail", imageUrl)
+        activity?.startService(musicServiceIntent)
+
         clickHandler()
         getBindingClass().seekBarPA.setOnSeekBarChangeListener(this@PodcastFragment)
-    }
-
-    private fun playMusic() {
-        isPlaying = true
-        mediaPlayer = MediaPlayer()
-        mediaPlayer.seekTo(mediaPlayer.currentPosition)
-        getBindingClass().progressBar.visibility = View.VISIBLE
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC)
-        getBindingClass().seekBarPA.isClickable = false
-        try {
-            mediaPlayer.setDataSource(args.songList.data.audio)
-            mediaPlayer.prepareAsync()
-            mediaPlayer.setOnPreparedListener(MediaPlayer.OnPreparedListener {
-                initializeSeekBar()
-                mediaPlayer.start()
-                getBindingClass().progressBar.visibility = View.GONE
-            })
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        getBindingClass().playPauseBtnPA.setIconResource(R.drawable.ic_baseline_pause_circle_outline_24)
-    }
-
-    private fun pauseMusic() {
-        isPlaying = false
-        mediaPlayer.seekTo(mediaPlayer.currentPosition)
-        mediaPlayer.pause()
-        getBindingClass().playPauseBtnPA.setIconResource(R.drawable.ic_baseline_play_circle_outline_24)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        playMusic()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (Util.SDK_INT < 24 || mediaPlayer == null) {
-            playMusic()
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        isPlaying = false
-        mediaPlayer.pause()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        isPlaying = false
-        mediaPlayer.pause()
     }
 
     private fun clickHandler() {
@@ -131,17 +109,33 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
         }
 
         getBindingClass().playPauseBtnPA.setOnClickListener {
-            if (isPlaying) pauseMusic() else playMusic()
+            myService.pauseSong()
+            initializeSeekBar()
+            getBindingClass().playBtnPA.visibility = View.VISIBLE
+            getBindingClass().playPauseBtnPA.visibility = View.GONE
         }
 
+        getBindingClass().playBtnPA.setOnClickListener {
+            myService.playSong()
+            getBindingClass().playPauseBtnPA.visibility = View.VISIBLE
+            getBindingClass().playBtnPA.visibility = View.GONE
+        }
+
+        getBindingClass().previousBtnPA.setOnClickListener {
+            myService.backwordSeconds()
+        }
+
+        getBindingClass().nextBtnPA.setOnClickListener {
+            myService.forwardSeconds()
+        }
     }
 
     private fun initializeSeekBar() {
-        getBindingClass().seekBarPA.max = mediaPlayer.seconds
+        getBindingClass().seekBarPA.max = myService.mediaPlayer!!.seconds
         runnable = Runnable {
-            getBindingClass().seekBarPA.progress = mediaPlayer.currentSeconds
-            getBindingClass().tvSeekBarStart.text = "${mediaPlayer.currentSeconds} sec"
-            val diff = mediaPlayer.seconds - mediaPlayer.currentSeconds
+            getBindingClass().seekBarPA.progress = myService.mediaPlayer!!.currentSeconds
+            getBindingClass().tvSeekBarStart.text = "${myService.mediaPlayer!!.currentSeconds} sec"
+            val diff = myService.mediaPlayer!!.seconds - myService.mediaPlayer!!.currentSeconds
             getBindingClass().tvSeekBarEnd.text = "$diff sec"
             handler.postDelayed(runnable, 1000)
         }
@@ -172,7 +166,7 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
         if (fromUser) {
-            mediaPlayer.seekTo(progress * 1000)
+            myService.mediaPlayer!!.seekTo(progress * 1000)
         }
     }
 
@@ -180,19 +174,6 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
     }
 
     override fun onStopTrackingTouch(seekBar: SeekBar?) {
-    }
-
-    override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-        if (musicService == null) {
-            val binder = service as MusicService.MyBinder
-            musicService = binder.currentService()
-        }
-        playMusic()
-        musicService!!.seekBarSetup()
-    }
-
-    override fun onServiceDisconnected(name: ComponentName?) {
-        musicService = null
     }
 
 }

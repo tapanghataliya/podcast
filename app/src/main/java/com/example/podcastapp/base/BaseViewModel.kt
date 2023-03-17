@@ -6,10 +6,6 @@ import java.lang.ref.WeakReference
 
 abstract class BaseViewModel<N>:ViewModel() {
     private lateinit var navigator: WeakReference<N>
-    val alertMessage: MutableLiveData<Pair<String, String>> =
-        MutableLiveData<Pair<String, String>>()
-    val progressMessage: MutableLiveData<Pair<String, String>> =
-        MutableLiveData<Pair<String, String>>()
 
     fun getNavigator(): N? = navigator.get()
 
