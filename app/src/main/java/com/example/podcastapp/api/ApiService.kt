@@ -1,6 +1,5 @@
 package com.example.podcastapp.api
 
-import com.example.podcastapp.data.SongResponse
 import com.example.podcastapp.data.test.SongList
 import retrofit2.http.GET
 

@@ -11,7 +11,6 @@ import android.media.MediaPlayer
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
@@ -21,7 +20,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 
 @AndroidEntryPoint
-class MusicService: Service(), MediaPlayer.OnPreparedListener {
+class MusicService : Service(), MediaPlayer.OnPreparedListener {
 
     private val CHANNEL_ID = "ForegroundService Kotlin"
     private val NOTIFICATION_ID = 1
@@ -36,7 +35,6 @@ class MusicService: Service(), MediaPlayer.OnPreparedListener {
     var mediaPlayer: MediaPlayer? = null
     private var myBinder = MyBinder()
     private var currentPosition: Int = 0
-
     inner class MyBinder : Binder() {
         fun currentService(): MusicService {
             return this@MusicService
@@ -50,13 +48,21 @@ class MusicService: Service(), MediaPlayer.OnPreparedListener {
         imageUrl = intent.getStringExtra("thumbnail").toString()
         audio = intent.getStringExtra("audioURL").toString()
 
-        intent?.let {
+        intent.let {
             when (it.action) {
                 "PLAY" -> {
-                    playSong()
+                    mediaPlayer.apply {
+                        if (mediaPlayer!!.isPlaying) pauseSong() else playSong()
+                    }
                 }
                 "PAUSE" -> {
                     pauseSong()
+                }
+                "SKIP" -> {
+                    backwordSeconds()
+                }
+                "SKIPFORWARD" -> {
+                    forwardSeconds()
                 }
                 else -> {
                     mediaPlayer?.release()
@@ -66,6 +72,7 @@ class MusicService: Service(), MediaPlayer.OnPreparedListener {
                         prepareAsync()
                     }
                 }
+
             }
         }
         createNotification(title, publisher, imageUrl)
@@ -84,46 +91,44 @@ class MusicService: Service(), MediaPlayer.OnPreparedListener {
             else -> PendingIntent.FLAG_UPDATE_CURRENT
         }
 
-        val playIntent = Intent(this, MusicService::class.java)
-        playIntent.action = "PLAY"
-        val playPendingIntent: PendingIntent =
-            PendingIntent.getService(this, 0, playIntent, flags)
+        val skipIntent = Intent(this, MusicService::class.java)
+        skipIntent.action = "SKIP"
+        val skipPendingIntent: PendingIntent =
+            PendingIntent.getService(this, 0, skipIntent, flags)
 
-        val pauseIntent = Intent(this, MusicService::class.java)
-        pauseIntent.action = "PAUSE"
-        val pausePendingIntent: PendingIntent =
-            PendingIntent.getService(this, 0, pauseIntent, flags)
+        val skipForwardIntent = Intent(this, MusicService::class.java)
+        skipForwardIntent.action = "SKIPFORWARD"
+        val forwardPendingIntent: PendingIntent =
+            PendingIntent.getService(this, 0, skipForwardIntent, flags)
 
+
+        val playPauseIcon = if (mediaPlayer!!.isPlaying) R.drawable.ic_baseline_pause_circle_outline_24 else
+            R.drawable.ic_baseline_play_circle_outline_24
+        val playPauseAction = NotificationCompat.Action(playPauseIcon, "Play/Pause", getPendingIntent("PLAY"))
 
         Glide.with(this).asBitmap().load(imageUrl).into(object : CustomTarget<Bitmap>() {
             override fun onResourceReady(
                 resource: Bitmap, transition: Transition<in Bitmap>?
             ) {
-
                 val notification = NotificationCompat.Builder(this@MusicService, CHANNEL_ID)
                     .setContentTitle(title).setContentText(publisher)
                     .setSmallIcon(R.drawable.music)
                     .setLargeIcon(resource)
                     .setAutoCancel(true)
-//                    .addAction(
-//                        if (mediaPlayer!!.isPlaying) R.drawable.ic_baseline_pause_circle_outline_24 else R.drawable.ic_baseline_play_circle_outline_24,
-//                        if (mediaPlayer!!.isPlaying) "PAUSE" else "PLAY",
-//                        pausePendingIntent
-//                    )
                     .addAction(
-                        R.drawable.ic_baseline_play_circle_outline_24,
-                        "Play",
-                        playPendingIntent
+                        R.drawable.ic_baseline_keyboard_double_arrow_left_24,
+                        "Left",
+                        skipPendingIntent
                     )
+                    .addAction(playPauseAction)
                     .addAction(
-                        R.drawable.ic_baseline_pause_circle_outline_24,
-                        "Stop",
-                        pausePendingIntent
+                        R.drawable.ic_baseline_keyboard_double_arrow_right_24,
+                        "Right",
+                        forwardPendingIntent
                     )
                     .setStyle(
                         androidx.media.app.NotificationCompat.MediaStyle()
                             .setShowActionsInCompactView(0, 1).setShowCancelButton(true)
-//                                .setCancelButtonIntent(stopPendingIntent)
                     ).build()
 
                 notificationManager!!.notify(NOTIFICATION_ID, notification)
@@ -132,6 +137,15 @@ class MusicService: Service(), MediaPlayer.OnPreparedListener {
             override fun onLoadCleared(placeholder: Drawable?) {}
         })
 
+    }
+
+    private fun getPendingIntent(action: String): PendingIntent {
+        val flags = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            else -> PendingIntent.FLAG_UPDATE_CURRENT
+        }
+        val intent = Intent(this, MusicService::class.java).apply { this.action = action }
+        return PendingIntent.getService(this, 0, intent, flags)
     }
 
     fun playSong() {
@@ -167,11 +181,6 @@ class MusicService: Service(), MediaPlayer.OnPreparedListener {
             val manager = getSystemService(NotificationManager::class.java)
             manager!!.createNotificationChannel(serviceChannel)
         }
-    }
-
-    override fun onTaskRemoved(rootIntent: Intent?) {
-        Log.e("ClearService", "END")
-        stopSelf()
     }
 
     fun forwardSeconds() {

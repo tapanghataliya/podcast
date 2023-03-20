@@ -1,19 +1,16 @@
 package com.example.podcastapp.screens.podcast_detail
 
-import android.content.*
-import android.media.AudioManager
+import android.content.ComponentName
+import android.content.Intent
+import android.content.ServiceConnection
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.registerReceiver
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
@@ -23,7 +20,6 @@ import com.example.podcastapp.base.BaseFragment
 import com.example.podcastapp.databinding.FragmentPodcastBinding
 import com.example.podcastapp.service.MusicService
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.IOException
 
 
 @AndroidEntryPoint
@@ -37,10 +33,6 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
     private var imageUrl: String = ""
     private lateinit var myService: MusicService
 
-    companion object {
-        var musicService: MusicService? = null
-    }
-
     private var isBound = false
 
     private lateinit var runnable: Runnable
@@ -50,11 +42,11 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
 
             myService = (service as MusicService.MyBinder).currentService()
-            initializeSeekBar()
             getBindingClass().progressBar.visibility = View.GONE
             val musicBinder = service as MusicService.MyBinder
             myService = musicBinder.currentService()
             isBound = true
+            initializeSeekBar()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -71,7 +63,6 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         (activity as AppCompatActivity).supportActionBar!!.hide()
-
         val arguments = arguments
         if (arguments != null) {
             title = arguments.getString("title").toString()
@@ -79,6 +70,8 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
             publisher = arguments.getString("publisher").toString()
             imageUrl = arguments.getString("thumbnail").toString()
             audio = arguments.getString("audio").toString()
+            var objectDatas = arguments.getParcelableArray("data")
+            Log.d("objectDatas", objectDatas.toString())
 
             getBindingClass().songNamePA.text = title
             getBindingClass().songDetail.text = titleDetail
@@ -117,16 +110,19 @@ class PodcastFragment : BaseFragment<FragmentPodcastBinding, PodcastViewModel>()
 
         getBindingClass().playBtnPA.setOnClickListener {
             myService.playSong()
+            initializeSeekBar()
             getBindingClass().playPauseBtnPA.visibility = View.VISIBLE
             getBindingClass().playBtnPA.visibility = View.GONE
         }
 
         getBindingClass().previousBtnPA.setOnClickListener {
             myService.backwordSeconds()
+            initializeSeekBar()
         }
 
         getBindingClass().nextBtnPA.setOnClickListener {
             myService.forwardSeconds()
+            initializeSeekBar()
         }
     }
 
